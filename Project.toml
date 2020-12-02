@@ -1,0 +1,4 @@
+name = "DICE2013"
+uuid = "f93e8c01-83fa-4223-a788-8632426d4700"
+authors = ["andi! <andreas.denner@ma.tum.de>"]
+version = "0.1.0"
