@@ -1,11 +1,14 @@
 module DICE2013
 
-
-using JuMP, Ipopt, Plots, Pkg
+using JuMP
+using Ipopt
+using Plots
 
 
 include("types.jl")
 include("functions.jl")
 include("optimization.jl")
+
+export setOptions, setInitialValues, optimization!, plotDice, DiceSimulation
 
 end # module
