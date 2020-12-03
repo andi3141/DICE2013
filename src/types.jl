@@ -1,3 +1,5 @@
+# structure containing all parameters defining the model
+
 mutable struct Options
     # time stepping
     tStep::Int  # time step size
@@ -40,7 +42,7 @@ mutable struct Options
     α::Float64  # Elasticity of marginal utility of consumption
 end
 
-
+# structure containing all initial values
 struct InitialValues
     μ₀::Float64 #Initial emissions control rate for base case 2010
     S₀::Float64  # initial saving rate
@@ -52,6 +54,7 @@ struct InitialValues
     K₀::Float64  # initial capital available
 end
 
+# struture containing all exogenous variables, which will be pre-computed
 
 mutable struct ExogenousVariables
     L::Array{Float64, 1}  # labour
@@ -62,6 +65,7 @@ mutable struct ExogenousVariables
     θ₁::Array{Float64, 1}  # cost of mitigation
 end
 
+# structure containing the variables for optimization
 
 mutable struct Variables
     μ::Array{VariableRef, 1}  # mitigation efforts
@@ -82,6 +86,7 @@ mutable struct Variables
     W::VariableRef  # social welfare
 end
 
+# structure containing the results
 
 mutable struct Results
     years::Array{Int64, 1}
@@ -103,6 +108,7 @@ mutable struct Results
     W::Float64  # social welfare
 end
 
+# handy simulation object, that has all interesting stuff in one place
 
 mutable struct DiceSimulation
     scenario::String

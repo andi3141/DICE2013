@@ -9,6 +9,6 @@ include("types.jl")
 include("functions.jl")
 include("optimization.jl")
 
-export setOptions, setInitialValues, optimization!, plotDice, DiceSimulation
+export setOptions, setInitialValues, optimization!, plotDice, DiceSimulation, runScenario
 
 end # module

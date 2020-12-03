@@ -1,3 +1,5 @@
+# function to set the initial values. If called without argument, standard 2013
+# values are used
 function setInitialValues(;
     μ₀::Float64 = 0.039,
     S₀::Float64 =0.25,
@@ -11,7 +13,8 @@ function setInitialValues(;
     InitialValues(μ₀,S₀, L₀, A₀, σ₀, T₀, M₀, K₀)
 end
 
-
+# function to set parameters of the model. If called without argument, standard
+# 2013 values are used
 function setOptions(;
     tStep = 5,
     N = 60,
@@ -59,17 +62,8 @@ function setOptions(;
     Options(tStep, N, N100, Lₐ, l_g, δₐ, gₐ, δσ, gσ, f₀, f₁, E_L0, δEL, Φ_T, b_T, M_AT1750, η, Φ_M, b_M, a₂, a₃,  θ₂, δₖ, γ, pb, δpb, ρ, limμ, fosslim, α)
 end
 
-
-# function setBaselineControlVariables(c;
-#     μ = 0.039*ones(c.N),
-#     S = 0.25*ones(c.N)
-#     )
-#     ControlVariables(μ, S)
-# end
-
-
-
-
+# function that precomputes the exogenous variables, as they do not depend on
+# the control variables
 function computeExogenousVariables(c, iv)
     # init
     L, A, σ, F_EX, E_LAND, θ₁ = (zeros(c.N) for _ = 1:6)
@@ -93,7 +87,7 @@ end
 
 
 
-
+# simple plot function. The option "Scenario", plots all interesting variables
 function plotDice(ds, plotvar)
 
     # set times
@@ -144,7 +138,8 @@ function plotDice(ds, plotvar)
 end
 
 
-
+# function that stores the JuMP variables, that contain the optimization
+# results, in variables for output
 function model_results(vars::Variables, opts::Options)
     years = 2005 .+ (opts.tStep*(1:opts.N))
     μ = value.(vars.μ);
@@ -169,11 +164,14 @@ function model_results(vars::Variables, opts::Options)
 end
 
 
-
-function simulateDice()
-    c = setOptions()
-    iv = setInitialValues()
-    ex = computeExtogenousVariables(c, iv)
-    cv = setBaselineControlVariables(c)
-    simulate(cv, c, iv, ex)
+# standard test simulation function
+function runScenario(sc)
+    opts = setOptions()  # set parameters
+    iv = setInitialValues()  # set initial values
+    if ~ (sc in ["baseline", "optimal", "2degree"])
+        throw("scenario not known. Possible scenarios are baseline, optimal, and 2degree")
+    end
+    ds = DiceSimulation(sc, opts, iv)   # construct simulation object
+    optimization!(ds)  # optimize using Ipopt and MUMPS
+    plotDice(ds, "Scenario")  # plot the scenario
 end
