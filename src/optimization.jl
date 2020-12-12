@@ -1,6 +1,4 @@
-
-# simulation function (no optimization)
-
+# simulation function; Control variables are kept constant (no optimization)
 function simulate!(ds)
     # unpack
     opts = ds.options
@@ -37,8 +35,7 @@ function simulate!(ds)
     ds.results = Results(years, μ, S, Ω, Λ, Y, Q, C, E, K, T[1,:], T[2,:], M[1,:], M[2,:], M[3,:], U, W)
 end
 
-# optimization function
-
+# optimization function, optimizes the given scenario using IpOpt
 function optimization!(ds::DiceSimulation)
 
     # for the baseline scenario, no optimization is needed, hence we simply simulate
@@ -50,12 +47,12 @@ function optimization!(ds::DiceSimulation)
         exVar = ds.exogenousVariables
         iv = ds.initialValues
         N = opts.N
-        μ_ubound = opts.μ_ubound*ones(N)
+        μ_ubound = opts.μ_ubound
         cca_ubound = opts.fosslim
         # init
         model =  Model()
         # define Variables
-        @variable(model, 0.0 <= μ[i=1:N] <= μ_ubound[i]); # Emission control rate GHGs
+        @variable(model, 0.0 <= μ[i=1:N] <= μ_ubound); # Emission control rate GHGs
         @variable(model, FORC[1:N]); # Increase in radiative forcing (watts per m2 from 1900)
         @variable(model, 0.0 <= Tₐₜ[1:N] <= 40.0); # Increase temperature of atmosphere (degrees C from 1900)
         @variable(model, -1.0 <= Tₗₒ[1:N] <= 20.0); # Increase temperatureof lower oceans (degrees C from 1900)
@@ -113,27 +110,24 @@ function optimization!(ds::DiceSimulation)
         #@constraint(model, vars.W == scale1 *sum(vars.U[i]/((1+opts.ρ)^(opts.tStep*i)) for i=1:N)+ scale2)
         @constraint(model, vars.W == sum(vars.U[i]/((1+opts.ρ)^(opts.tStep*i)) for i=1:N))
 
-
         # set initial conditions
         JuMP.fix(vars.Mₐₜ[1], iv.M₀[1]; force=true)
         JuMP.fix(vars.Mᵤₚ[1], iv.M₀[2]; force=true)
         JuMP.fix(vars.Mₗₒ[1], iv.M₀[3]; force=true)
         JuMP.fix(vars.Tₗₒ[1], iv.T₀[2]; force=true)
-        #JuMP.fix(vars.Tₐₜ[1], iv.T₀[1]; force=true)
-        # JuMP.fix(vars.K[1], iv.K₀; force=true);
         @NLconstraint(model, vars.K[1] == iv.K₀)
         @constraint(model, vars.Tₐₜ[1] == iv.T₀[1])
 
-        if ds.scenario=="twoDegree"# && N<=19
+        # restrict the temperature increase to two degrees
+        if ds.scenario=="twoDegree"
             for i in 2:N
                 JuMP.set_upper_bound(vars.Tₐₜ[i], 2.0);
             end
-#        elseif ds.scenario=="twoDegree" && N>19
-#            throw("Only works until 2100")
         end
 
         # Objective function
         @objective(model, Max, vars.W);
+
         # set optimizer
         set_optimizer(model, Ipopt.Optimizer)
         set_optimizer_attribute(model, "print_level", 5)
@@ -142,14 +136,12 @@ function optimization!(ds::DiceSimulation)
         set_optimizer_attribute(model,  "expect_infeasible_problem",  "yes")
         set_optimizer_attribute(model,  "max_iter",  5000)
         set_optimizer_attribute(model, "tol", 0.1)
+
         # actual optimization
         optimize!(model)
+
         # save results to ds
         ds.results= model_results(vars, opts)
-        return ds
     end
+    return ds
 end
-# Equation for MC abatement
-#@NLconstraint(model, [i=1:N], vars.MCABATE[i] == params.pbacktime[i] * vars.μ[i]^(opts.θ₂-1));
-# Carbon price equation from abatement
-#@NLconstraint(model, [i=1:N], vars.CPRICE[i] == params.pbacktime[i] * (vars.μ[i]/params.partfract[i])^(opts.θ₂-1));

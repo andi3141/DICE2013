@@ -83,10 +83,6 @@ function computeExogenousVariables(c, iv)
     ExogenousVariables(L, A, σ, F_EX, E_LAND, θ₁)
 end
 
-
-
-
-
 # simple plot function. The option "Scenario", plots all interesting variables
 function plotDice(ds, plotvar)
 
@@ -137,9 +133,8 @@ function plotDice(ds, plotvar)
     display(fn)
 end
 
-
 # function that stores the JuMP variables, that contain the optimization
-# results, in variables for output
+# results in variables for output
 function model_results(vars::Variables, opts::Options)
     years = 2005 .+ (opts.tStep*(1:opts.N))
     μ = value.(vars.μ);
@@ -163,8 +158,7 @@ function model_results(vars::Variables, opts::Options)
     Results(years, μ, S, Ω, Λ, Y, Q, C, E, K, Tₐₜ, Tₗₒ, Mₐₜ, Mᵤₚ, Mₗₒ, U, W)
 end
 
-
-# standard test simulation function
+# standard simulation function
 function runScenario(sc)
     opts = setOptions()  # set parameters
     iv = setInitialValues()  # set initial values
