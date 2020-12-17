@@ -119,18 +119,15 @@ function plotDice(ds, plotvar)
         plot!(actualTimes,  ds.results.Mᵤₚ, label = "MUP")
         f3 = plot(actualTimes,  ds.results.Y,  ylabel="USD (trillion)",xlabel="years",title="Gross World Product",label = "Y")
         plot!(actualTimes,  ds.results.C, label ="Q")
-        plot!(actualTimes,  ds.results.Λ, label = "Λ")
-        plot!(actualTimes,  ds.results.Ω, label = "Ω")
+        plot!(actualTimes,  ds.results.Λ, label = "Lambda")
+        plot!(actualTimes,  ds.results.Ω, label = "Omega")
         f4 = plot(actualTimes,  ds.results.E,  ylabel="carbon (GTC)",xlabel="years",title="Emissions",label = "E")
         plot!(actualTimes,  ds.exogenousVariables.E_LAND, label = "ELand")
         l = @layout [a b; c d; e f]
         fn = plot(fR1, fR2, f1, f2, f3, f4, layout = l)
-        gui(fn)
-        #savefig(fG, "C:/Users/andre/Google Drive/03_Dokumente/DICE Modell/pictures/baseLineScenario2.tikz")
     else
         throw("plot argument not defined")
     end
-    display(fn)
 end
 
 # function that stores the JuMP variables, that contain the optimization
